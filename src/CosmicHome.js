@@ -1,16 +1,79 @@
-import React, { useEffect, useRef } from 'react';
-import { Book, Sparkles, Library, Sun } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Book, Sparkles, Library, Sun, Moon, Cloud, Stars,  Flame, Droplets } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './components/ui/Card';
+
+const THEMES = {
+  cosmic: {
+    name: 'Cosmic',
+    icon: Stars,
+    background: '#0d0d2a',
+    particleColor: 'rgba(255, 255, 255, 0.8)',
+    particleCount: 200,
+    particleSpeed: 0.5,
+    particleSize: 2,
+    fadeSpeed: 0.1,
+  },
+  fire: {
+    name: 'Fire',
+    icon:  Flame,
+    background: '#2a0d0d',
+    particleColor: 'rgba(255, 166, 0, 0.8)',
+    particleCount: 150,
+    particleSpeed: 2,
+    particleSize: 3,
+    fadeSpeed: 0.2,
+  },
+  ocean: {
+    name: 'Ocean',
+    icon: Droplets,
+    background: '#0d1a2a',
+    particleColor: 'rgba(0, 191, 255, 0.8)',
+    particleCount: 100,
+    particleSpeed: 0.3,
+    particleSize: 4,
+    fadeSpeed: 0.05,
+  },
+  forest: {
+    name: 'Forest',
+    icon: Cloud,
+    background: '#0d2a0d',
+    particleColor: 'rgba(144, 238, 144, 0.8)',
+    particleCount: 120,
+    particleSpeed: 0.2,
+    particleSize: 3,
+    fadeSpeed: 0.08,
+  },
+  desert: {
+    name: 'Desert',
+    icon: Sun,
+    background: '#2a2a0d',
+    particleColor: 'rgba(255, 215, 0, 0.8)',
+    particleCount: 80,
+    particleSpeed: 0.4,
+    particleSize: 2,
+    fadeSpeed: 0.15,
+  },
+  night: {
+    name: 'Night',
+    icon: Moon,
+    background: '#1a1a1a',
+    particleColor: 'rgba(147, 112, 219, 0.8)',
+    particleCount: 180,
+    particleSpeed: 0.3,
+    particleSize: 2,
+    fadeSpeed: 0.12,
+  }
+};
 
 const CosmicHome = () => {
   const bgRef = useRef(null);
+  const [currentTheme, setCurrentTheme] = useState('cosmic');
+  const [particles, setParticles] = useState([]);
 
   useEffect(() => {
-    // Background animation setup
     const canvas = bgRef.current;
     const ctx = canvas.getContext('2d');
     
-    // Set canvas size
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -19,31 +82,37 @@ const CosmicHome = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // Star parameters
-    const stars = [];
-    const starCount = 200;
+    // Initialize particles based on current theme
+    const theme = THEMES[currentTheme];
+    const newParticles = Array.from({ length: theme.particleCount }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * theme.particleSize,
+      speed: Math.random() * theme.particleSpeed,
+      angle: Math.random() * Math.PI * 2, // For more varied movement
+      spin: Math.random() * 0.02 - 0.01   // For rotation
+    }));
     
-    // Create stars
-    for (let i = 0; i < starCount; i++) {
-      stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2,
-        speed: Math.random() * 0.5
-      });
-    }
+    setParticles(newParticles);
     
-    // Animation loop
     const animate = () => {
-      ctx.fillStyle = 'rgba(13, 13, 42, 0.1)';
+      ctx.fillStyle = `${theme.background}${Math.floor(theme.fadeSpeed * 255).toString(16).padStart(2, '0')}`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Draw and update stars
-      stars.forEach(star => {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.fillRect(star.x, star.y, star.size, star.size);
+      particles.forEach(particle => {
+        ctx.fillStyle = theme.particleColor;
+        ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
         
-        star.y = (star.y + star.speed) % canvas.height;
+        // Update particle position with varied movement
+        particle.x += Math.cos(particle.angle) * particle.speed;
+        particle.y += Math.sin(particle.angle) * particle.speed;
+        particle.angle += particle.spin;
+        
+        // Wrap particles around screen
+        if (particle.x < 0) particle.x = canvas.width;
+        if (particle.x > canvas.width) particle.x = 0;
+        if (particle.y < 0) particle.y = canvas.height;
+        if (particle.y > canvas.height) particle.y = 0;
       });
       
       requestAnimationFrame(animate);
@@ -54,7 +123,7 @@ const CosmicHome = () => {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, []);
+  }, [currentTheme]);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -88,15 +157,35 @@ const CosmicHome = () => {
               <CardHeader>
                 <CardTitle className="text-white">Create Your Story</CardTitle>
                 <CardDescription className="text-gray-200">
-                  Where would you like your story to take you today?
+                  Choose a theme and begin your journey
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  {Object.entries(THEMES).map(([key, theme]) => {
+                    const IconComponent = theme.icon;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setCurrentTheme(key)}
+                        className={`p-4 rounded-lg border transition-all duration-300 flex flex-col items-center gap-2
+                                  ${currentTheme === key 
+                                    ? 'bg-white/20 border-white/50' 
+                                    : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                      >
+                        <IconComponent className={`w-6 h-6 ${currentTheme === key ? 'text-white' : 'text-gray-400'}`} />
+                        <span className={`text-sm ${currentTheme === key ? 'text-white' : 'text-gray-400'}`}>
+                          {theme.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
                 <textarea 
                   className="w-full p-4 rounded-lg bg-white/5 backdrop-blur-sm border border-white/20 
                            text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-500 
                            focus:border-transparent h-32"
-                  placeholder="Describe your cosmic adventure..."
+                  placeholder="Describe your adventure..."
                 />
                 <button className="mt-4 w-full px-6 py-3 rounded-lg bg-purple-600/80 text-white 
                                  hover:bg-purple-600 transition-all duration-300">
