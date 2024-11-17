@@ -6,64 +6,65 @@ const THEMES = {
   cosmic: {
     name: 'Cosmic',
     icon: Stars,
-    background: '#0d0d2a',
-    particleColor: 'rgba(255, 255, 255, 0.8)',
-    particleCount: 200,
-    particleSpeed: 0.5,
-    particleSize: 2,
-    fadeSpeed: 0.1,
+    background: '#1b1f54', // Deep space blue
+    particleColor: 'rgba(135, 206, 250, 0.9)', // Sky blue
+    particleCount: 250,
+    particleSpeed: 1,
+    particleSize: 3,
+    fadeSpeed: 0.05,
   },
   fire: {
     name: 'Fire',
-    icon:  Flame,
-    background: '#2a0d0d',
-    particleColor: 'rgba(255, 166, 0, 0.8)',
-    particleCount: 150,
-    particleSpeed: 2,
-    particleSize: 3,
-    fadeSpeed: 0.2,
+    icon: Flame,
+    background: '#ff4500', // Bright orange-red
+    particleColor: 'rgba(255, 255, 102, 0.9)', // Bright yellow
+    particleCount: 200,
+    particleSpeed: 2.5,
+    particleSize: 4,
+    fadeSpeed: 0.1,
   },
   ocean: {
     name: 'Ocean',
     icon: Droplets,
-    background: '#0d1a2a',
-    particleColor: 'rgba(0, 191, 255, 0.8)',
-    particleCount: 100,
-    particleSpeed: 0.3,
-    particleSize: 4,
-    fadeSpeed: 0.05,
+    background: '#0077be', // Vivid ocean blue
+    particleColor: 'rgba(0, 255, 255, 0.9)', // Aqua
+    particleCount: 180,
+    particleSpeed: 0.7,
+    particleSize: 3.5,
+    fadeSpeed: 0.07,
   },
   forest: {
     name: 'Forest',
     icon: Cloud,
-    background: '#0d2a0d',
-    particleColor: 'rgba(144, 238, 144, 0.8)',
-    particleCount: 120,
-    particleSpeed: 0.2,
+    background: '#228b22', // Forest green
+    particleColor: 'rgba(173, 255, 47, 0.9)', // Bright lime green
+    particleCount: 200,
+    particleSpeed: 1,
     particleSize: 3,
     fadeSpeed: 0.08,
   },
   desert: {
     name: 'Desert',
     icon: Sun,
-    background: '#2a2a0d',
-    particleColor: 'rgba(255, 215, 0, 0.8)',
-    particleCount: 80,
-    particleSpeed: 0.4,
-    particleSize: 2,
-    fadeSpeed: 0.15,
+    background: '#f4a460', // Sandy orange
+    particleColor: 'rgba(255, 223, 0, 0.9)', // Bright golden yellow
+    particleCount: 150,
+    particleSpeed: 1.2,
+    particleSize: 3.5,
+    fadeSpeed: 0.09,
   },
   night: {
     name: 'Night',
     icon: Moon,
-    background: '#1a1a1a',
-    particleColor: 'rgba(147, 112, 219, 0.8)',
-    particleCount: 180,
-    particleSpeed: 0.3,
-    particleSize: 2,
-    fadeSpeed: 0.12,
+    background: '#191970', // Midnight blue
+    particleColor: 'rgba(218, 112, 214, 0.9)', // Orchid purple
+    particleCount: 250,
+    particleSpeed: 0.8,
+    particleSize: 2.5,
+    fadeSpeed: 0.1,
   }
 };
+
 
 const CosmicHome = () => {
   const bgRef = useRef(null);
