@@ -1,227 +1,497 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Book, Sparkles, Library, Sun, Moon, Cloud, Stars,  Flame, Droplets } from 'lucide-react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { 
+  Wand2, 
+  Rocket, 
+  Crown, 
+  Compass, 
+  TreePine,
+  Ghost,
+  Sparkles,
+  BookOpen
+} from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './components/ui/Card';
 
+// Enhanced themes for children
 const THEMES = {
-  cosmic: {
-    name: 'Cosmic',
-    icon: Stars,
-    background: '#1b1f54', // Deep space blue
-    particleColor: 'rgba(135, 206, 250, 0.9)', // Sky blue
-    particleCount: 250,
-    particleSpeed: 1,
-    particleSize: 3,
-    fadeSpeed: 0.05,
+  fantasy: {
+    name: 'Fantasy',
+    icon: Wand2,
+    gradient: 'bg-gradient-to-br from-purple-400 via-pink-300 to-purple-500',
+    accentColor: 'text-purple-300',
+    glassStyle: 'bg-white/20 hover:bg-white/30 backdrop-blur-md',
+    buttonStyle: 'bg-purple-500/30 hover:bg-purple-500/40',
+    animation: {
+      particles: {
+        shape: 'star',
+        color: '#FFD700',
+        count: 20,
+        size: { min: 2, max: 4 },
+        speed: 0.5,
+        spin: true
+      }
+    }
   },
-  fire: {
-    name: 'Fire',
-    icon: Flame,
-    background: '#ff4500', // Bright orange-red
-    particleColor: 'rgba(255, 255, 102, 0.9)', // Bright yellow
-    particleCount: 200,
-    particleSpeed: 2.5,
-    particleSize: 4,
-    fadeSpeed: 0.1,
+  scifi: {
+    name: 'Sci-Fi',
+    icon: Rocket,
+    gradient: 'bg-gradient-to-br from-cyan-500 via-blue-400 to-indigo-500',
+    accentColor: 'text-cyan-300',
+    glassStyle: 'bg-white/20 hover:bg-white/30 backdrop-blur-md',
+    buttonStyle: 'bg-blue-500/30 hover:bg-blue-500/40',
+    animation: {
+      particles: {
+        shape: 'circle',
+        color: '#00FFFF',
+        count: 25,
+        size: { min: 1, max: 3 },
+        speed: 1,
+        pulse: true
+      }
+    }
   },
-  ocean: {
-    name: 'Ocean',
-    icon: Droplets,
-    background: '#0077be', // Vivid ocean blue
-    particleColor: 'rgba(0, 255, 255, 0.9)', // Aqua
-    particleCount: 180,
-    particleSpeed: 0.7,
-    particleSize: 3.5,
-    fadeSpeed: 0.07,
+  fairytale: {
+    name: 'Fairy Tale',
+    icon: Crown,
+    gradient: 'bg-gradient-to-br from-pink-400 via-rose-300 to-yellow-300',
+    accentColor: 'text-pink-300',
+    glassStyle: 'bg-white/20 hover:bg-white/30 backdrop-blur-md',
+    buttonStyle: 'bg-pink-500/30 hover:bg-pink-500/40',
+    animation: {
+      particles: {
+        shape: 'heart',
+        color: '#FF69B4',
+        count: 15,
+        size: { min: 2, max: 4 },
+        speed: 0.3,
+        float: true
+      }
+    }
   },
-  forest: {
-    name: 'Forest',
-    icon: Cloud,
-    background: '#228b22', // Forest green
-    particleColor: 'rgba(173, 255, 47, 0.9)', // Bright lime green
-    particleCount: 200,
-    particleSpeed: 1,
-    particleSize: 3,
-    fadeSpeed: 0.08,
+  adventure: {
+    name: 'Adventure',
+    icon: Compass,
+    gradient: 'bg-gradient-to-br from-green-400 via-emerald-300 to-teal-400',
+    accentColor: 'text-emerald-300',
+    glassStyle: 'bg-white/20 hover:bg-white/30 backdrop-blur-md',
+    buttonStyle: 'bg-emerald-500/30 hover:bg-emerald-500/40',
+    animation: {
+      particles: {
+        shape: 'leaf',
+        color: '#90EE90',
+        count: 20,
+        size: { min: 2, max: 4 },
+        speed: 0.4,
+        swing: true
+      }
+    }
   },
-  desert: {
-    name: 'Desert',
-    icon: Sun,
-    background: '#f4a460', // Sandy orange
-    particleColor: 'rgba(255, 223, 0, 0.9)', // Bright golden yellow
-    particleCount: 150,
-    particleSpeed: 1.2,
-    particleSize: 3.5,
-    fadeSpeed: 0.09,
+  mystery: {
+    name: 'Mystery',
+    icon: Ghost,
+    gradient: 'bg-gradient-to-br from-violet-500 via-purple-400 to-indigo-400',
+    accentColor: 'text-violet-300',
+    glassStyle: 'bg-white/20 hover:bg-white/30 backdrop-blur-md',
+    buttonStyle: 'bg-violet-500/30 hover:bg-violet-500/40',
+    animation: {
+      particles: {
+        shape: 'smoke',
+        color: '#9370DB',
+        count: 15,
+        size: { min: 3, max: 5 },
+        speed: 0.2,
+        fade: true
+      }
+    }
   },
-  night: {
-    name: 'Night',
-    icon: Moon,
-    background: '#191970', // Midnight blue
-    particleColor: 'rgba(218, 112, 214, 0.9)', // Orchid purple
-    particleCount: 250,
-    particleSpeed: 0.8,
-    particleSize: 2.5,
-    fadeSpeed: 0.1,
+  woodland: {
+    name: 'Woodland',
+    icon: TreePine,
+    gradient: 'bg-gradient-to-br from-lime-400 via-green-300 to-emerald-400',
+    accentColor: 'text-lime-300',
+    glassStyle: 'bg-white/20 hover:bg-white/30 backdrop-blur-md',
+    buttonStyle: 'bg-lime-500/30 hover:bg-lime-500/40',
+    animation: {
+      particles: {
+        shape: 'butterfly',
+        color: '#98FB98',
+        count: 12,
+        size: { min: 2, max: 4 },
+        speed: 0.3,
+        flutter: true
+      }
+    }
   }
 };
 
+// Enhanced particle animations with themed shapes
+const AnimatedBackground = ({ theme }) => {
+  const canvasRef = useRef(null);
+  const particlesRef = useRef([]);
+  const animationFrameRef = useRef();
 
-const CosmicHome = () => {
-  const bgRef = useRef(null);
-  const [currentTheme, setCurrentTheme] = useState('cosmic');
-  const [particles, setParticles] = useState([]);
+  const drawShape = useCallback((ctx, shape, x, y, size, rotation = 0) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+
+    switch (shape) {
+      case 'star':
+        for (let i = 0; i < 5; i++) {
+          ctx.rotate(Math.PI / 2.5);
+          ctx.beginPath();
+          ctx.moveTo(0, 0 - size);
+          ctx.lineTo(0 + size/3, 0 - size/3);
+          ctx.lineTo(0 + size, 0);
+          ctx.lineTo(0 + size/3, 0 + size/3);
+          ctx.lineTo(0 + size/2, 0 + size);
+          ctx.lineTo(0, 0 + size/3);
+          ctx.lineTo(0 - size/2, 0 + size);
+          ctx.lineTo(0 - size/3, 0 + size/3);
+          ctx.lineTo(0 - size, 0);
+          ctx.lineTo(0 - size/3, 0 - size/3);
+          ctx.closePath();
+          ctx.fill();
+        }
+        break;
+      case 'heart':
+        ctx.beginPath();
+        ctx.moveTo(0, size / 4);
+        ctx.quadraticCurveTo(size / 4, 0, size / 2, 0);
+        ctx.quadraticCurveTo(size, 0, size, size / 4);
+        ctx.quadraticCurveTo(size, size / 2, 0, size);
+        ctx.quadraticCurveTo(-size, size / 2, -size, size / 4);
+        ctx.quadraticCurveTo(-size, 0, -size / 2, 0);
+        ctx.quadraticCurveTo(-size / 4, 0, 0, size / 4);
+        ctx.fill();
+        break;
+      case 'butterfly':
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(size, -size, size * 2, -size, size * 2, 0);
+        ctx.bezierCurveTo(size * 2, size, size, size, 0, 0);
+        ctx.bezierCurveTo(-size, size, -size * 2, size, -size * 2, 0);
+        ctx.bezierCurveTo(-size * 2, -size, -size, -size, 0, 0);
+        ctx.fill();
+        break;
+      default:
+        ctx.beginPath();
+        ctx.arc(0, 0, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    
+    ctx.restore();
+  }, []);
 
   useEffect(() => {
-    const canvas = bgRef.current;
+    const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    const resizeCanvas = () => {
+    const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
-    
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    
-    // Initialize particles based on current theme
-    const theme = THEMES[currentTheme];
-    const newParticles = Array.from({ length: theme.particleCount }, () => ({
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+
+    // Initialize particles with theme-specific behaviors
+    particlesRef.current = Array.from({ length: theme.animation.particles.count }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      size: Math.random() * theme.particleSize,
-      speed: Math.random() * theme.particleSpeed,
-      angle: Math.random() * Math.PI * 2, // For more varied movement
-      spin: Math.random() * 0.02 - 0.01   // For rotation
+      size: Math.random() * (theme.animation.particles.size.max - theme.animation.particles.size.min) + theme.animation.particles.size.min,
+      speedX: (Math.random() - 0.5) * theme.animation.particles.speed,
+      speedY: (Math.random() - 0.5) * theme.animation.particles.speed,
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.02,
+      opacity: 1,
+      fadeDirection: 1
     }));
-    
-    setParticles(newParticles);
-    
+
     const animate = () => {
-      ctx.fillStyle = `${theme.background}${Math.floor(theme.fadeSpeed * 255).toString(16).padStart(2, '0')}`;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       
-      particles.forEach(particle => {
-        ctx.fillStyle = theme.particleColor;
-        ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
+      particlesRef.current.forEach(particle => {
+        ctx.fillStyle = `${theme.animation.particles.color}${Math.floor(particle.opacity * 255).toString(16).padStart(2, '0')}`;
         
-        // Update particle position with varied movement
-        particle.x += Math.cos(particle.angle) * particle.speed;
-        particle.y += Math.sin(particle.angle) * particle.speed;
-        particle.angle += particle.spin;
-        
-        // Wrap particles around screen
+        // Update particle position and effects based on theme
+        particle.x += particle.speedX;
+        particle.y += particle.speedY;
+        particle.rotation += particle.rotationSpeed;
+
+        if (theme.animation.particles.fade) {
+          particle.opacity += 0.01 * particle.fadeDirection;
+          if (particle.opacity >= 1 || particle.opacity <= 0.3) {
+            particle.fadeDirection *= -1;
+          }
+        }
+
+        if (theme.animation.particles.float) {
+          particle.y += Math.sin(Date.now() * 0.001 + particle.x) * 0.2;
+        }
+
         if (particle.x < 0) particle.x = canvas.width;
         if (particle.x > canvas.width) particle.x = 0;
         if (particle.y < 0) particle.y = canvas.height;
         if (particle.y > canvas.height) particle.y = 0;
+
+        drawShape(
+          ctx,
+          theme.animation.particles.shape,
+          particle.x,
+          particle.y,
+          particle.size,
+          particle.rotation
+        );
       });
-      
-      requestAnimationFrame(animate);
+
+      animationFrameRef.current = requestAnimationFrame(animate);
     };
-    
+
     animate();
-    
+
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('resize', handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
     };
-  }, [currentTheme]);
+  }, [theme, drawShape]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <canvas ref={bgRef} className="absolute inset-0 -z-10" />
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 -z-10"
+    />
+  );
+};
+
+const CosmicHome = () => {
+  const [currentTheme, setCurrentTheme] = useState('fantasy');
+  const [storyText, setStoryText] = useState('');
+  const theme = THEMES[currentTheme];
+
+  return (
+    <div className={`min-h-screen ${theme.gradient}`}>
+      <AnimatedBackground theme={theme} />
       
       <div className="relative z-10">
+        {/* Fun Header */}
         <header className="bg-white/10 backdrop-blur-md border-b border-white/20">
-          <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold text-white flex items-center gap-2">
-                <Sparkles className="text-purple-300" />
-                Tales To Be Heard
+              <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+                <Sparkles className="animate-spin-slow text-yellow-300" />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-yellow-500">
+                  Story Magic
+                </span>
               </h1>
-              <nav className="space-x-4">
-                <button className="px-6 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white 
-                                 hover:bg-white/20 transition-all duration-300 border border-white/30">
-                  Create Story
-                </button>
-                <button className="px-6 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white 
-                                 hover:bg-white/20 transition-all duration-300 border border-white/30">
-                  Library
+              <nav className="flex gap-3">
+                <button className={`rounded-full px-6 py-2 ${theme.glassStyle} font-medium flex items-center gap-2`}>
+                  <BookOpen className="w-4 h-4" />
+                  My Stories
                 </button>
               </nav>
             </div>
           </div>
         </header>
 
+        {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid md:grid-cols-3 gap-6">
-            <Card className="md:col-span-2 bg-white/10 backdrop-blur-md border-white/20">
+            {/* Story Creation Card */}
+            <Card className={`md:col-span-2 ${theme.glassStyle} border-white/20`}>
               <CardHeader>
-                <CardTitle className="text-white">Create Your Story</CardTitle>
-                <CardDescription className="text-gray-200">
-                  Choose a theme and begin your journey
+                <CardTitle className="text-white flex items-center gap-2">
+                  {React.createElement(theme.icon, { className: theme.accentColor })}
+                  Create Your Story
+                </CardTitle>
+                <CardDescription className="text-white/80">
+                  Pick your favorite story world and let your imagination fly!
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-4 mb-4">
-                  {Object.entries(THEMES).map(([key, theme]) => {
-                    const IconComponent = theme.icon;
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                  {Object.entries(THEMES).map(([key, themeData]) => {
+                    const IconComponent = themeData.icon;
                     return (
                       <button
                         key={key}
                         onClick={() => setCurrentTheme(key)}
-                        className={`p-4 rounded-lg border transition-all duration-300 flex flex-col items-center gap-2
-                                  ${currentTheme === key 
-                                    ? 'bg-white/20 border-white/50' 
-                                    : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+                        className={`p-4 rounded-xl border transition-all duration-300 ${
+                          currentTheme === key
+                            ? `${themeData.buttonStyle} border-white/50 scale-105`
+                            : 'bg-white/10 border-white/20 hover:scale-105'
+                        }`}
                       >
-                        <IconComponent className={`w-6 h-6 ${currentTheme === key ? 'text-white' : 'text-gray-400'}`} />
-                        <span className={`text-sm ${currentTheme === key ? 'text-white' : 'text-gray-400'}`}>
-                          {theme.name}
-                        </span>
+                        <div className="flex flex-col items-center gap-2">
+                          <IconComponent className={`w-8 h-8 ${themeData.accentColor}`} />
+                          <span className="text-white font-medium">{themeData.name}</span>
+                        </div>
                       </button>
                     );
                   })}
                 </div>
-                <textarea 
-                  className="w-full p-4 rounded-lg bg-white/5 backdrop-blur-sm border border-white/20 
-                           text-white placeholder-gray-300 focus:ring-2 focus:ring-purple-500 
-                           focus:border-transparent h-32"
-                  placeholder="Describe your adventure..."
+                
+                <textarea
+                  value={storyText}
+                  onChange={(e) => setStoryText(e.target.value)}
+                  className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 h-40 resize-none text-lg"
+                  placeholder="Tell me about your amazing story..."
                 />
-                <button className="mt-4 w-full px-6 py-3 rounded-lg bg-purple-600/80 text-white 
-                                 hover:bg-purple-600 transition-all duration-300">
-                  Generate Story
+                
+                <button className={`mt-4 w-full px-6 py-3 rounded-xl ${theme.buttonStyle} text-white font-medium text-lg transition-all duration-300 hover:scale-102 flex items-center justify-center gap-2`}>
+                  <Sparkles className="w-5 h-5" />
+                  Create Magic!
                 </button>
               </CardContent>
             </Card>
 
-            <Card className="bg-white/10 backdrop-blur-md border-white/20">
+            {/* Story Showcase */}
+            <Card className={`${theme.glassStyle} border-white/20`}>
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Sun className="text-yellow-300" />
-                  Story of the Day
-                </CardTitle>
+                  <Crown className={theme.accentColor} />
+                  Today's Special Story</CardTitle>
+                <CardDescription className="text-white/80">
+                  A magical story picked just for you!
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-white">
-                    The Cosmic Explorer
-                  </h3>
-                  <p className="text-gray-200">
-                    Journey through the stars with today's featured tale...
-                  </p>
-                  <button className="w-full px-6 py-3 rounded-lg bg-white/10 text-white 
-                                   hover:bg-white/20 transition-all duration-300 border border-white/30">
+                  <div className={`relative overflow-hidden rounded-lg h-40 ${theme.glassStyle} p-4 group cursor-pointer`}>
+                    <div className="absolute inset-0 opacity-30 transition-opacity group-hover:opacity-50"
+                         style={{
+                           backgroundImage: `url('/api/placeholder/400/320')`,
+                           backgroundSize: 'cover',
+                           backgroundPosition: 'center'
+                         }} />
+                    <div className="relative z-10">
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        The Hidden Dragon's Garden
+                      </h3>
+                      <p className="text-white/80 line-clamp-3">
+                        Join Emily as she discovers a magical garden where baby dragons learn to fly...
+                      </p>
+                    </div>
+                  </div>
+
+                  <button className={`w-full px-6 py-3 rounded-xl ${theme.buttonStyle} text-white font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2`}>
+                    <BookOpen className="w-5 h-5" />
                     Read Now
                   </button>
+                </div>
+
+                {/* Story Writing Tips */}
+                <div className="mt-6 space-y-3">
+                  <h4 className="text-white font-medium">Story Helper</h4>
+                  <div className={`rounded-lg ${theme.glassStyle} p-4`}>
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2 rounded-full ${theme.buttonStyle}`}>
+                        <Sparkles className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-white/90 text-sm">
+                          Tip: {getThemeTip(currentTheme)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Story Starters Section */}
+          <div className="mt-8">
+            <Card className={`${theme.glassStyle} border-white/20`}>
+              <CardHeader>
+                <CardTitle className="text-white">Story Starters</CardTitle>
+                <CardDescription className="text-white/80">
+                  Need help? Try these magical beginnings!
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {getThemeStarters(currentTheme).map((starter, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setStoryText(starter)}
+                      className={`p-4 rounded-xl ${theme.buttonStyle} text-white text-left hover:scale-105 transition-all duration-300`}
+                    >
+                      "{starter.substring(0, 60)}..."
+                    </button>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </div>
         </main>
+
+        {/* Fun Footer */}
+        <footer className="mt-8 bg-white/10 backdrop-blur-md border-t border-white/20 py-4">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex justify-between items-center">
+              <p className="text-white/80 text-sm">
+                Created with 💫 for young storytellers
+              </p>
+              <button className={`rounded-full px-4 py-2 ${theme.glassStyle} text-sm font-medium`}>
+                Need Help?
+              </button>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
+};
+
+// Helper functions for theme-specific content
+const getThemeTip = (theme) => {
+  const tips = {
+    fantasy: "Include magical creatures and enchanted objects in your story!",
+    scifi: "Think about future technology and amazing space adventures!",
+    fairytale: "Start with 'Once upon a time...' and add some royal characters!",
+    adventure: "Make your hero face exciting challenges and discover treasures!",
+    mystery: "Create suspense by adding clues for your readers to solve!",
+    woodland: "Write about talking animals and the secrets of the forest!"
+  };
+  return tips[theme] || tips.fantasy;
+};
+
+const getThemeStarters = (theme) => {
+  const starters = {
+    fantasy: [
+      "The ancient spell book glowed with a mysterious light...",
+      "The dragon's egg began to crack just as the moon rose...",
+      "The magical map appeared on my bedroom wall..."
+    ],
+    scifi: [
+      "The robot's eyes flickered to life for the first time...",
+      "Our spaceship's alarm suddenly started beeping...",
+      "The time machine whirred and sparkled..."
+    ],
+    fairytale: [
+      "Once upon a time, in a castle made of clouds...",
+      "The princess wasn't like any other princess...",
+      "The magical mirror showed a different world..."
+    ],
+    adventure: [
+      "The treasure map fell out of the old book...",
+      "The secret cave entrance slowly opened...",
+      "The compass pointed to a direction that didn't exist..."
+    ],
+    mystery: [
+      "The old house held more secrets than anyone knew...",
+      "The strange footprints led to nowhere...",
+      "The mysterious letter arrived on a rainy Tuesday..."
+    ],
+    woodland: [
+      "The wise old owl called a forest meeting...",
+      "Deep in the enchanted forest, there was a tiny door...",
+      "The talking squirrel had an important message..."
+    ]
+  };
+  return starters[theme] || starters.fantasy;
 };
 
 export default CosmicHome;

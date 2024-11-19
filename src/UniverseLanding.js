@@ -6,6 +6,9 @@ const UniverseLanding = () => {
   const mountRef = useRef(null);
   const [isZooming, setIsZooming] = useState(false);
   const navigate = useNavigate();
+  const titleRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const buttonRef = useRef(null);
 
   useEffect(() => {
     // Scene setup
@@ -57,6 +60,32 @@ const UniverseLanding = () => {
     // Animation state
     let frame = 0;
     let zoomProgress = 0;
+
+    // Text animation setup
+    const animateText = (progress) => {
+      if (titleRef.current && descriptionRef.current && buttonRef.current) {
+        const scale = 1 + progress * 2;
+        const opacity = 1 - progress;
+        const blur = progress * 10;
+        
+        // Animate title
+        titleRef.current.style.transform = `scale(${scale}) translateZ(${progress * 500}px)`;
+        titleRef.current.style.opacity = opacity;
+        titleRef.current.style.filter = `blur(${blur}px)`;
+        
+        // Animate description with delay
+        const descDelay = Math.max(0, (progress - 0.2) * 1.25);
+        descriptionRef.current.style.transform = `scale(${scale * 0.8}) translateZ(${progress * 400}px)`;
+        descriptionRef.current.style.opacity = Math.max(0, 1 - descDelay);
+        descriptionRef.current.style.filter = `blur(${blur * 0.8}px)`;
+        
+        // Animate button with more delay
+        const buttonDelay = Math.max(0, (progress - 0.4) * 1.67);
+        buttonRef.current.style.transform = `scale(${scale * 0.6}) translateZ(${progress * 300}px)`;
+        buttonRef.current.style.opacity = Math.max(0, 1 - buttonDelay);
+        buttonRef.current.style.filter = `blur(${blur * 0.6}px)`;
+      }
+    };
     
     // Animation loop
     const animate = () => {
@@ -71,6 +100,9 @@ const UniverseLanding = () => {
         zoomProgress += 0.01;
         camera.position.z = 500 * (1 - zoomProgress);
         particlesMaterial.opacity = Math.max(0, 1 - zoomProgress * 2);
+        
+        // Animate text elements
+        animateText(zoomProgress);
         
         if (zoomProgress >= 1) {
           cancelAnimationFrame(frame);
@@ -97,7 +129,6 @@ const UniverseLanding = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(frame);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       mountRef.current?.removeChild(renderer.domElement);
     };
   }, [isZooming, navigate]);
@@ -105,17 +136,27 @@ const UniverseLanding = () => {
   return (
     <div className="relative">
       <div ref={mountRef} className="absolute inset-0" />
-      <div className="relative z-10 h-screen flex flex-col items-center justify-center text-white">
-        <h1 className="text-6xl font-bold mb-8 text-center">
+      <div className="relative z-10 h-screen flex flex-col items-center justify-center text-white perspective-1000">
+        <h1 
+          ref={titleRef}
+          className="text-6xl font-bold mb-8 text-center transition-all duration-300 transform-gpu"
+          style={{ transformStyle: 'preserve-3d' }}
+        >
           Tales To Be Heard
         </h1>
-        <p className="text-xl mb-12 text-center max-w-2xl px-4">
+        <p 
+          ref={descriptionRef}
+          className="text-xl mb-12 text-center max-w-2xl px-4 transition-all duration-300 transform-gpu"
+          style={{ transformStyle: 'preserve-3d' }}
+        >
           Embark on a journey through stories as vast as the universe itself
         </p>
         <button
+          ref={buttonRef}
           onClick={() => setIsZooming(true)}
           className="px-8 py-4 text-lg bg-white/10 backdrop-blur-sm rounded-full 
-                   hover:bg-white/20 transition-all duration-300 border border-white/30"
+                   hover:bg-white/20 transition-all duration-300 border border-white/30 transform-gpu"
+          style={{ transformStyle: 'preserve-3d' }}
         >
           Begin Your Journey
         </button>
