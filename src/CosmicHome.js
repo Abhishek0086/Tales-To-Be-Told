@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Wand2, 
   Rocket, 
@@ -122,6 +123,8 @@ const THEMES = {
     }
   }
 };
+
+
 
 // Enhanced particle animations with themed shapes
 const AnimatedBackground = ({ theme }) => {
@@ -266,6 +269,14 @@ const AnimatedBackground = ({ theme }) => {
 };
 
 const CosmicHome = () => {
+
+  const navigate = useNavigate();
+
+  const handleCreateStory = () => {
+    // Here you could potentially save the story text to some state/context/storage
+    navigate('/stories');
+  };
+
   const [currentTheme, setCurrentTheme] = useState('fantasy');
   const [storyText, setStoryText] = useState('');
   const theme = THEMES[currentTheme];
@@ -314,33 +325,36 @@ const CosmicHome = () => {
                   {Object.entries(THEMES).map(([key, themeData]) => {
                     const IconComponent = themeData.icon;
                     return (
-                      <button
-                        key={key}
-                        onClick={() => setCurrentTheme(key)}
-                        className={`p-4 rounded-xl border transition-all duration-300 ${
-                          currentTheme === key
-                            ? `${themeData.buttonStyle} border-white/50 scale-105`
-                            : 'bg-white/10 border-white/20 hover:scale-105'
-                        }`}
-                      >
-                        <div className="flex flex-col items-center gap-2">
-                          <IconComponent className={`w-8 h-8 ${themeData.accentColor}`} />
-                          <span className="text-white font-medium">{themeData.name}</span>
-                        </div>
-                      </button>
+                        <button
+                            key={key}
+                            onClick={() => setCurrentTheme(key)}
+                            className={`p-4 rounded-xl border transition-all duration-300 ${
+                                currentTheme === key
+                                    ? `${themeData.buttonStyle} border-white/50 scale-105`
+                                    : 'bg-white/10 border-white/20 hover:scale-105'
+                            }`}
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <IconComponent className={`w-8 h-8 ${themeData.accentColor}`}/>
+                            <span className="text-white font-medium">{themeData.name}</span>
+                          </div>
+                        </button>
                     );
                   })}
                 </div>
-                
+
                 <textarea
-                  value={storyText}
-                  onChange={(e) => setStoryText(e.target.value)}
-                  className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 h-40 resize-none text-lg"
-                  placeholder="Tell me about your amazing story..."
+                    value={storyText}
+                    onChange={(e) => setStoryText(e.target.value)}
+                    className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 h-40 resize-none text-lg"
+                    placeholder="Tell me about your amazing story..."
                 />
-                
-                <button className={`mt-4 w-full px-6 py-3 rounded-xl ${theme.buttonStyle} text-white font-medium text-lg transition-all duration-300 hover:scale-102 flex items-center justify-center gap-2`}>
-                  <Sparkles className="w-5 h-5" />
+
+                <button
+                    onClick={handleCreateStory}
+                    className={`mt-4 w-full px-6 py-3 rounded-xl ${theme.buttonStyle} text-white font-medium text-lg transition-all duration-300 hover:scale-102 flex items-center justify-center gap-2`}
+                >
+                  <Sparkles className="w-5 h-5"/>
                   Create Magic!
                 </button>
               </CardContent>
@@ -350,7 +364,7 @@ const CosmicHome = () => {
             <Card className={`${theme.glassStyle} border-white/20`}>
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
-                  <Crown className={theme.accentColor} />
+                  <Crown className={theme.accentColor}/>
                   Today's Special Story</CardTitle>
                 <CardDescription className="text-white/80">
                   A magical story picked just for you!
