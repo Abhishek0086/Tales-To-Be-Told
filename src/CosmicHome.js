@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { 
   Wand2, 
@@ -11,8 +12,9 @@ import {
   BookOpen
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './components/ui/Card';
+import AnimatedBackground from './AnimatedBackground';  // Extracted AnimatedBackground component
 
-// Enhanced themes for children
+// THEMES object remains the same as in the previous implementation
 const THEMES = {
   fantasy: {
     name: 'Fantasy',
@@ -124,169 +126,115 @@ const THEMES = {
   }
 };
 
-
-
-// Enhanced particle animations with themed shapes
-const AnimatedBackground = ({ theme }) => {
-  const canvasRef = useRef(null);
-  const particlesRef = useRef([]);
-  const animationFrameRef = useRef();
-
-  const drawShape = useCallback((ctx, shape, x, y, size, rotation = 0) => {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rotation);
-
-    switch (shape) {
-      case 'star':
-        for (let i = 0; i < 5; i++) {
-          ctx.rotate(Math.PI / 2.5);
-          ctx.beginPath();
-          ctx.moveTo(0, 0 - size);
-          ctx.lineTo(0 + size/3, 0 - size/3);
-          ctx.lineTo(0 + size, 0);
-          ctx.lineTo(0 + size/3, 0 + size/3);
-          ctx.lineTo(0 + size/2, 0 + size);
-          ctx.lineTo(0, 0 + size/3);
-          ctx.lineTo(0 - size/2, 0 + size);
-          ctx.lineTo(0 - size/3, 0 + size/3);
-          ctx.lineTo(0 - size, 0);
-          ctx.lineTo(0 - size/3, 0 - size/3);
-          ctx.closePath();
-          ctx.fill();
-        }
-        break;
-      case 'heart':
-        ctx.beginPath();
-        ctx.moveTo(0, size / 4);
-        ctx.quadraticCurveTo(size / 4, 0, size / 2, 0);
-        ctx.quadraticCurveTo(size, 0, size, size / 4);
-        ctx.quadraticCurveTo(size, size / 2, 0, size);
-        ctx.quadraticCurveTo(-size, size / 2, -size, size / 4);
-        ctx.quadraticCurveTo(-size, 0, -size / 2, 0);
-        ctx.quadraticCurveTo(-size / 4, 0, 0, size / 4);
-        ctx.fill();
-        break;
-      case 'butterfly':
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(size, -size, size * 2, -size, size * 2, 0);
-        ctx.bezierCurveTo(size * 2, size, size, size, 0, 0);
-        ctx.bezierCurveTo(-size, size, -size * 2, size, -size * 2, 0);
-        ctx.bezierCurveTo(-size * 2, -size, -size, -size, 0, 0);
-        ctx.fill();
-        break;
-      default:
-        ctx.beginPath();
-        ctx.arc(0, 0, size, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    
-    ctx.restore();
-  }, []);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    // Initialize particles with theme-specific behaviors
-    particlesRef.current = Array.from({ length: theme.animation.particles.count }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * (theme.animation.particles.size.max - theme.animation.particles.size.min) + theme.animation.particles.size.min,
-      speedX: (Math.random() - 0.5) * theme.animation.particles.speed,
-      speedY: (Math.random() - 0.5) * theme.animation.particles.speed,
-      rotation: Math.random() * Math.PI * 2,
-      rotationSpeed: (Math.random() - 0.5) * 0.02,
-      opacity: 1,
-      fadeDirection: 1
-    }));
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      particlesRef.current.forEach(particle => {
-        ctx.fillStyle = `${theme.animation.particles.color}${Math.floor(particle.opacity * 255).toString(16).padStart(2, '0')}`;
-        
-        // Update particle position and effects based on theme
-        particle.x += particle.speedX;
-        particle.y += particle.speedY;
-        particle.rotation += particle.rotationSpeed;
-
-        if (theme.animation.particles.fade) {
-          particle.opacity += 0.01 * particle.fadeDirection;
-          if (particle.opacity >= 1 || particle.opacity <= 0.3) {
-            particle.fadeDirection *= -1;
-          }
-        }
-
-        if (theme.animation.particles.float) {
-          particle.y += Math.sin(Date.now() * 0.001 + particle.x) * 0.2;
-        }
-
-        if (particle.x < 0) particle.x = canvas.width;
-        if (particle.x > canvas.width) particle.x = 0;
-        if (particle.y < 0) particle.y = canvas.height;
-        if (particle.y > canvas.height) particle.y = 0;
-
-        drawShape(
-          ctx,
-          theme.animation.particles.shape,
-          particle.x,
-          particle.y,
-          particle.size,
-          particle.rotation
-        );
-      });
-
-      animationFrameRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
-    };
-  }, [theme, drawShape]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 -z-10"
-    />
-  );
+// Helper function to get theme tip (same as previous implementation)
+const getThemeTip = (theme) => {
+  const tips = {
+    fantasy: "Include magical creatures and enchanted objects in your story!",
+    scifi: "Think about future technology and amazing space adventures!",
+    fairytale: "Start with 'Once upon a time...' and add some royal characters!",
+    adventure: "Make your hero face exciting challenges and discover treasures!",
+    mystery: "Create suspense by adding clues for your readers to solve!",
+    woodland: "Write about talking animals and the secrets of the forest!"
+  };
+  return tips[theme] || tips.fantasy;
 };
 
-const CosmicHome = () => {
+// Helper function to get theme story starters (same as previous implementation)
+const getThemeStarters = (theme) => {
+  const starters = {
+    fantasy: [
+      "The ancient spell book glowed with a mysterious light...",
+      "The dragon's egg began to crack just as the moon rose...",
+      "The magical map appeared on my bedroom wall..."
+    ],
+    scifi: [
+      "The robot's eyes flickered to life for the first time...",
+      "Our spaceship's alarm suddenly started beeping...",
+      "The time machine whirred and sparkled..."
+    ],
+    fairytale: [
+      "Once upon a time, in a castle made of clouds...",
+      "The princess wasn't like any other princess...",
+      "The magical mirror showed a different world..."
+    ],
+    adventure: [
+      "The treasure map fell out of the old book...",
+      "The secret cave entrance slowly opened...",
+      "The compass pointed to a direction that didn't exist..."
+    ],
+    mystery: [
+      "The old house held more secrets than anyone knew...",
+      "The strange footprints led to nowhere...",
+      "The mysterious letter arrived on a rainy Tuesday..."
+    ],
+    woodland: [
+      "The wise old owl called a forest meeting...",
+      "Deep in the enchanted forest, there was a tiny door...",
+      "The talking squirrel had an important message..."
+    ]
+  };
+  return starters[theme] || starters.fantasy;
+};
 
+
+const CosmicHome = () => {
   const navigate = useNavigate();
 
-  const handleCreateStory = () => {
-    // Here you could potentially save the story text to some state/context/storage
-    navigate('/stories');
+  // State management
+  const [currentTheme, setCurrentTheme] = useState('fantasy');
+  const [userPrompt, setUserPrompt] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Derive theme from current selection
+  const theme = THEMES[currentTheme];
+
+  // Story generation function with navigation
+  const generateStory = async () => {
+    // Validate user prompt
+    if (!userPrompt.trim()) {
+      alert('Please provide a story prompt!');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Simulate story generation API call
+      // In a real application, replace this with your actual API endpoint
+      const response = await axios.post('/api/generate-story', {
+        theme: currentTheme,
+        userPrompt: userPrompt
+      });
+      
+      // Navigate to story display page with generated story data
+      navigate('/story', { 
+        state: { 
+          story: {
+            title: response.data.title || 'Untitled Story', // Fallback title
+            content: response.data.content || 'No content generated.', // Fallback content
+            theme: currentTheme
+          } 
+        } 
+      });
+    } catch (error) {
+      console.error("Story generation failed", error);
+      // Optionally show an error message to the user
+      alert('Failed to generate story. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const [currentTheme, setCurrentTheme] = useState('fantasy');
-  const [storyText, setStoryText] = useState('');
-  const theme = THEMES[currentTheme];
+  // Story list navigation handler
+  const handleCreateStory = () => {
+    navigate('/stories');
+  };
 
   return (
     <div className={`min-h-screen ${theme.gradient}`}>
       <AnimatedBackground theme={theme} />
       
       <div className="relative z-10">
-        {/* Fun Header */}
+        {/* Header - Remains the same as previous implementation */}
         <header className="bg-white/10 backdrop-blur-md border-b border-white/20">
           <div className="max-w-7xl mx-auto px-4 py-4">
             <div className="flex justify-between items-center">
@@ -297,7 +245,10 @@ const CosmicHome = () => {
                 </span>
               </h1>
               <nav className="flex gap-3">
-                <button className={`rounded-full px-6 py-2 ${theme.glassStyle} font-medium flex items-center gap-2`}>
+                <button 
+                  onClick={handleCreateStory}
+                  className={`rounded-full px-6 py-2 ${theme.glassStyle} font-medium flex items-center gap-2`}
+                >
                   <BookOpen className="w-4 h-4" />
                   My Stories
                 </button>
@@ -306,7 +257,7 @@ const CosmicHome = () => {
           </div>
         </header>
 
-        {/* Main Content */}
+        {/* Main Content - Remains largely the same */}
         <main className="max-w-7xl mx-auto px-4 py-8">
           <div className="grid md:grid-cols-3 gap-6">
             {/* Story Creation Card */}
@@ -321,56 +272,70 @@ const CosmicHome = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {/* Theme Selection - Remains the same */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
                   {Object.entries(THEMES).map(([key, themeData]) => {
                     const IconComponent = themeData.icon;
                     return (
-                        <button
-                            key={key}
-                            onClick={() => setCurrentTheme(key)}
-                            className={`p-4 rounded-xl border transition-all duration-300 ${
-                                currentTheme === key
-                                    ? `${themeData.buttonStyle} border-white/50 scale-105`
-                                    : 'bg-white/10 border-white/20 hover:scale-105'
-                            }`}
-                        >
-                          <div className="flex flex-col items-center gap-2">
-                            <IconComponent className={`w-8 h-8 ${themeData.accentColor}`}/>
-                            <span className="text-white font-medium">{themeData.name}</span>
-                          </div>
-                        </button>
+                      <button
+                        key={key}
+                        onClick={() => setCurrentTheme(key)}
+                        className={`p-4 rounded-xl border transition-all duration-300 ${
+                          currentTheme === key
+                            ? `${themeData.buttonStyle} border-white/50 scale-105`
+                            : 'bg-white/10 border-white/20 hover:scale-105'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center gap-2">
+                          <IconComponent className={`w-8 h-8 ${themeData.accentColor}`}/>
+                          <span className="text-white font-medium">{themeData.name}</span>
+                        </div>
+                      </button>
                     );
                   })}
                 </div>
 
+                {/* Prompt Input */}
                 <textarea
-                    value={storyText}
-                    onChange={(e) => setStoryText(e.target.value)}
-                    className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 h-40 resize-none text-lg"
-                    placeholder="Tell me about your amazing story..."
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/60 focus:ring-2 focus:ring-white/30 h-40 resize-none text-lg"
+                  placeholder={`Provide specific details for your ${currentTheme} story. For example: "A brave robot who helps lost animals" or "A mysterious treasure hidden in an ancient forest"`}
                 />
 
-                <button
-                    onClick={handleCreateStory}
-                    className={`mt-4 w-full px-6 py-3 rounded-xl ${theme.buttonStyle} text-white font-medium text-lg transition-all duration-300 hover:scale-102 flex items-center justify-center gap-2`}
+                {/* Story Generation Button */}
+                <button 
+                  onClick={generateStory}
+                  disabled={isLoading || !userPrompt.trim()}
+                  className={`mt-4 w-full px-6 py-3 rounded-xl ${theme.buttonStyle} text-white font-medium text-lg transition-all duration-300 hover:scale-102 flex items-center justify-center gap-2 ${
+                    (isLoading || !userPrompt.trim()) ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                 >
-                  <Sparkles className="w-5 h-5"/>
-                  Create Magic!
+                  {isLoading ? (
+                    <span>Generating Magic...</span>
+                  ) : (
+                    <>
+                      <Sparkles className="w-5 h-5" />
+                      Create Magic!
+                    </>
+                  )}
                 </button>
               </CardContent>
             </Card>
 
-            {/* Story Showcase */}
+            {/* Story Showcase Card - Remains the same */}
             <Card className={`${theme.glassStyle} border-white/20`}>
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Crown className={theme.accentColor}/>
-                  Today's Special Story</CardTitle>
+                  Today's Special Story
+                </CardTitle>
                 <CardDescription className="text-white/80">
                   A magical story picked just for you!
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {/* Content remains the same as previous implementation */}
                 <div className="space-y-4">
                   <div className={`relative overflow-hidden rounded-lg h-40 ${theme.glassStyle} p-4 group cursor-pointer`}>
                     <div className="absolute inset-0 opacity-30 transition-opacity group-hover:opacity-50"
@@ -389,7 +354,10 @@ const CosmicHome = () => {
                     </div>
                   </div>
 
-                  <button className={`w-full px-6 py-3 rounded-xl ${theme.buttonStyle} text-white font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2`}>
+                  {/* Read Now button */}
+                  <button 
+                  onClick={handleCreateStory}
+                  className={`w-full px-6 py-3 rounded-xl ${theme.buttonStyle} text-white font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2`}>
                     <BookOpen className="w-5 h-5" />
                     Read Now
                   </button>
@@ -429,7 +397,7 @@ const CosmicHome = () => {
                   {getThemeStarters(currentTheme).map((starter, index) => (
                     <button
                       key={index}
-                      onClick={() => setStoryText(starter)}
+                      onClick={() => setUserPrompt(starter)}
                       className={`p-4 rounded-xl ${theme.buttonStyle} text-white text-left hover:scale-105 transition-all duration-300`}
                     >
                       "{starter.substring(0, 60)}..."
@@ -441,7 +409,7 @@ const CosmicHome = () => {
           </div>
         </main>
 
-        {/* Fun Footer */}
+        {/* Footer - Remains the same */}
         <footer className="mt-8 bg-white/10 backdrop-blur-md border-t border-white/20 py-4">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex justify-between items-center">
@@ -457,55 +425,6 @@ const CosmicHome = () => {
       </div>
     </div>
   );
-};
-
-// Helper functions for theme-specific content
-const getThemeTip = (theme) => {
-  const tips = {
-    fantasy: "Include magical creatures and enchanted objects in your story!",
-    scifi: "Think about future technology and amazing space adventures!",
-    fairytale: "Start with 'Once upon a time...' and add some royal characters!",
-    adventure: "Make your hero face exciting challenges and discover treasures!",
-    mystery: "Create suspense by adding clues for your readers to solve!",
-    woodland: "Write about talking animals and the secrets of the forest!"
-  };
-  return tips[theme] || tips.fantasy;
-};
-
-const getThemeStarters = (theme) => {
-  const starters = {
-    fantasy: [
-      "The ancient spell book glowed with a mysterious light...",
-      "The dragon's egg began to crack just as the moon rose...",
-      "The magical map appeared on my bedroom wall..."
-    ],
-    scifi: [
-      "The robot's eyes flickered to life for the first time...",
-      "Our spaceship's alarm suddenly started beeping...",
-      "The time machine whirred and sparkled..."
-    ],
-    fairytale: [
-      "Once upon a time, in a castle made of clouds...",
-      "The princess wasn't like any other princess...",
-      "The magical mirror showed a different world..."
-    ],
-    adventure: [
-      "The treasure map fell out of the old book...",
-      "The secret cave entrance slowly opened...",
-      "The compass pointed to a direction that didn't exist..."
-    ],
-    mystery: [
-      "The old house held more secrets than anyone knew...",
-      "The strange footprints led to nowhere...",
-      "The mysterious letter arrived on a rainy Tuesday..."
-    ],
-    woodland: [
-      "The wise old owl called a forest meeting...",
-      "Deep in the enchanted forest, there was a tiny door...",
-      "The talking squirrel had an important message..."
-    ]
-  };
-  return starters[theme] || starters.fantasy;
 };
 
 export default CosmicHome;
